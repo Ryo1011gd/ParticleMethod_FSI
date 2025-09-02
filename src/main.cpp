@@ -1,3 +1,25 @@
+//================================================================================================//
+//------------------------------------------------------------------------------------------------//
+//              FSI-Mopving Particle Hydrodynamics (Full-Explicit)                                //
+//------------------------------------------------------------------------------------------------//
+//    Copyright       : Ryo Yokoyama                                                              //
+//    OpenACC GPU     : 2025                                                                      //
+//    HPCSDK 25.1 CUDA version 12.4                                                            	  //
+//    MPI-OpenACC hybrid Parallel Computation							                          //
+//    For HPCSDK https://developer.nvidia.com/nvidia-hpc-sdk-241-download                         //
+//    For MPI   https://www.open-mpi.org/software/ompi/v4.1/					                  //
+//    Final Check     : 2025 28 May                                                               //
+//    												                                              //
+//                                                                                                //
+//================================================================================================//
+//        PLEASE DO NOT DISTRIBUTE THIS CODE TO OUTSIDE OF OKAMOTO LABO                           //
+//                                                                                                //
+//================================================================================================//
+//                      HOW TO COMPILE IN LINUX SYSTEM                                            //
+//                   1. /FSI/generator/make/                                                      //
+//                   2. /FSI/source/make                                                          //
+//                   3. /results/and ./generate.sh  and ./execute.sh                              //
+//================================================================================================//
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -27,8 +49,9 @@ const double DOUBLE_ZERO[32]={0.0, 0.0, 0.0, 0.0,  0.0, 0.0, 0.0, 0.0,
 using namespace std;
 #define TWO_DIMENSIONAL
 
+//****PLEASE CHOOSE MODULE ***//
 
-//#define Bar_Module
+#define Bar_Module
 //#define DAM_Module
 //#define Turek_Hron
 //#define Rolling1
@@ -388,7 +411,7 @@ void setInitialVelocityProfile() {
 
         // Set velocity
         Velocity[iP][0] = 0.0;
-        Velocity[iP][1] = 0.005*c0 * fx / fL;  // Initial vertical velocity
+        Velocity[iP][1] = 0.01*c0 * fx / fL;  // Initial vertical velocity
         Velocity[iP][2] = 0.0;
     }
 #endif
@@ -538,16 +561,15 @@ int main(int argc, char *argv[])
 
 	{
 	
-        calculateInitialNeighbor();
+    calculateInitialNeighbor();
 	calculateNeighbor();
 	calculateDensityA();
 	calculateGravityCenter();
 	calculateDensityP();
-        calculateLamesconstant();
-        calculateNormalizer();
-
-	setInitialVelocityProfile();
-		writeVtkFile("output.vtk");
+    calculateLamesconstant();
+    calculateNormalizer();
+	//setInitialVelocityProfile();
+	writeVtkFile("output.vtk");
 		
 		{
 			time_t t=time(NULL);
@@ -568,8 +590,8 @@ int main(int argc, char *argv[])
 			cTill = clock(); cOther += (cTill-cFrom); cFrom = cTill;
 			
 			#ifdef Turek_Hron
-		//	setInitialVelocityProfile();
-                        #endif
+			setInitialVelocityProfile();
+            #endif
 			
 			// wall calculation
 			calculateWall();
@@ -597,7 +619,7 @@ int main(int argc, char *argv[])
 			// calculate physical coefficient (viscosity, bulk modulus, bulk viscosity..)
 			calculatePhysicalCoefficients();
 			
-			            		#ifdef FLUID
+			#ifdef FLUID
 			// calculate pressure 
 			calculatePressureP();
 			
@@ -611,18 +633,18 @@ int main(int argc, char *argv[])
 			calculateViscosityV();
 			#endif
 
-            		calculateGravity();
+            calculateGravity();
 			
 			calculateInterfaceForce();
 		        
             
-            		// calculate intermidiate Velocity
-            		calculateAcceleration();    		
+            // calculate intermidiate Velocity
+            calculateAcceleration();    		
 			
 			//resetForce();
 			 
 			 // particle movement
-        	        calculateConvection();
+        	calculateConvection();
 
 			
 			#ifdef STRUCTURE
@@ -741,8 +763,8 @@ static void readDataFile(char *filename)
        else if(sscanf(buf," InteractionRatio(Type4) %lf %lf %lf %lf %lf %lf",&InteractionRatio[4][0],&InteractionRatio[4][1],&InteractionRatio[4][2],&InteractionRatio[4][3],&InteractionRatio[4][4],&InteractionRatio[4][5])==6){mode=reading_global;}
        else if(sscanf(buf," InteractionRatio(Type5) %lf %lf %lf %lf %lf %lf",&InteractionRatio[5][0],&InteractionRatio[5][1],&InteractionRatio[5][2],&InteractionRatio[5][3],&InteractionRatio[5][4],&InteractionRatio[5][5])==6){mode=reading_global;}
        else if(sscanf(buf," Gravity %lf %lf %lf", &Gravity[0], &Gravity[1], &Gravity[2])==3){mode=reading_global;}
-       else if(sscanf(buf," Wall2  Center %lf %lf %lf Velocity %lf %lf %lf Omega %lf %lf %lf", &WallCenter[4][0],  &WallCenter[4][1],  &WallCenter[4][2],  &WallVelocity[4][0],  &WallVelocity[4][1],  &WallVelocity[4][2],  &WallOmega[4][0],  &WallOmega[4][1],  &WallOmega[4][2])==9){mode=reading_global;}
-       else if(sscanf(buf," Wall3  Center %lf %lf %lf Velocity %lf %lf %lf Omega %lf %lf %lf", &WallCenter[5][0],  &WallCenter[5][1],  &WallCenter[5][2],  &WallVelocity[5][0],  &WallVelocity[5][1],  &WallVelocity[5][2],  &WallOmega[5][0],  &WallOmega[5][1],  &WallOmega[5][2])==9){mode=reading_global;}
+       else if(sscanf(buf," Wall6  Center %lf %lf %lf Velocity %lf %lf %lf Omega %lf %lf %lf", &WallCenter[4][0],  &WallCenter[4][1],  &WallCenter[4][2],  &WallVelocity[4][0],  &WallVelocity[4][1],  &WallVelocity[4][2],  &WallOmega[4][0],  &WallOmega[4][1],  &WallOmega[4][2])==9){mode=reading_global;}
+       else if(sscanf(buf," Wall7  Center %lf %lf %lf Velocity %lf %lf %lf Omega %lf %lf %lf", &WallCenter[5][0],  &WallCenter[5][1],  &WallCenter[5][2],  &WallVelocity[5][0],  &WallVelocity[5][1],  &WallVelocity[5][2],  &WallOmega[5][0],  &WallOmega[5][1],  &WallOmega[5][2])==9){mode=reading_global;}
        else{
                 log_printf("Invalid line in data file \"%s\"\n", buf);
             }
@@ -1025,7 +1047,7 @@ static void writeVtkFile(char *filename)
     }
 
 
-
+/*
     fprintf(fp, "\n");
     for(int iD=0;iD<DIM;++iD){
         for(int jD=0;jD<DIM;++jD){
@@ -1036,6 +1058,7 @@ static void writeVtkFile(char *filename)
             }
         }
     }
+        */
     fprintf(fp, "VECTORS velocity float\n");
     for(int iP=0;iP<ParticleCount;++iP){
          fprintf(fp, "%e %e %e\n", (float)v[iP][0], (float)v[iP][1], (float)v[iP][2]);
@@ -1053,12 +1076,13 @@ static void writeVtkFile(char *filename)
 //         fprintf(fp, "%e %e %e\n", (float)GravityCenter[iP][0], (float)GravityCenter[iP][1], (float)GravityCenter[iP][2]);
 //    }
 //    fprintf(fp, "\n");
+/*
     fprintf(fp, "VECTORS force float\n");
     for(int iP=0;iP<ParticleCount;++iP){
          fprintf(fp, "%e %e %e\n", (float)Force[iP][0], (float)Force[iP][1], (float)Force[iP][2]);
     }
     fprintf(fp, "\n");
-
+*/
 
     
     fprintf(fp, "SCALARS Initialneighbor float 1\n");
@@ -1094,19 +1118,19 @@ static void writeVtkFile(char *filename)
 //    for(int iP=0;iP<ParticleCount;++iP){
 //         fprintf(fp, "%e\n", (float)DivergenceP[iP]);
 //    }
-    fprintf(fp, "\n");
-    fprintf(fp, "SCALARS PressureP float 1\n");
-    fprintf(fp, "LOOKUP_TABLE default\n");
-    for(int iP=0;iP<ParticleCount;++iP){
-         fprintf(fp, "%e\n", (float)PressureP[iP]);
-    }
-    fprintf(fp, "\n");
-    fprintf(fp, "SCALARS VirialPressureAtParticle float 1\n");
-    fprintf(fp, "LOOKUP_TABLE default\n");
-    for(int iP=0;iP<ParticleCount;++iP){
-         fprintf(fp, "%e\n", (float)VirialPressureAtParticle[iP]); // trivial operation is done for 
-    }
-	fprintf(fp, "\n");
+//    fprintf(fp, "\n");
+//    fprintf(fp, "SCALARS PressureP float 1\n");
+//    fprintf(fp, "LOOKUP_TABLE default\n");
+//    for(int iP=0;iP<ParticleCount;++iP){
+//         fprintf(fp, "%e\n", (float)PressureP[iP]);
+//    }
+//    fprintf(fp, "\n");
+//    fprintf(fp, "SCALARS VirialPressureAtParticle float 1\n");
+//    fprintf(fp, "LOOKUP_TABLE default\n");
+//    for(int iP=0;iP<ParticleCount;++iP){
+//         fprintf(fp, "%e\n", (float)VirialPressureAtParticle[iP]); // trivial operation is done for 
+ //   }
+//	fprintf(fp, "\n");
 //	for(int iD=0;iD<DIM-1;++iD){
 //		for(int jD=0;jD<DIM-1;++jD){
 //			fprintf(fp, "SCALARS VirialStressAtParticle[%d][%d] float 1\n",iD,jD);
@@ -1872,9 +1896,9 @@ static void calculateConvection()
 #pragma omp parallel for
     for(int iP=FluidParticleBegin;iP<FluidParticleEnd;++iP){
 
-        Acceleration[iP][0] += Force[iP][0]/Mass[iP];
-        Acceleration[iP][1] += Force[iP][1]/Mass[iP];
-        Acceleration[iP][2] += Force[iP][2]/Mass[iP];
+        Acceleration[iP][0] += Force[iP][0]/Mass[iP];  //For AI data//
+        Acceleration[iP][1] += Force[iP][1]/Mass[iP]; //For AI data//
+        Acceleration[iP][2] += Force[iP][2]/Mass[iP]; //For AI data// 
 
         Position[iP][0] += Velocity[iP][0]*Dt;
         Position[iP][1] += Velocity[iP][1]*Dt;
